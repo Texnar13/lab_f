@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>LabF</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+  </head>
+
+  <body>
+
+    <!--nav class="navbar fixed-top">
+      <% if @current_user %>
+        Вы вошли как <%= @current_user.name %>
+        <%= link_to "Выйти", '/logout' %>
+      <% else %>
+        <a href="/login">Войти</a>
+        <a href="/users/new">Регистрация</a>
+      <% end %>
+    </nav-->
+
+    <%= yield %>
+  </body>
+</html>

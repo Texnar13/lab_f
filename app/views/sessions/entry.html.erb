@@ -1,0 +1,16 @@
+<h2>Вход на сайт (admin@yandex.ru - admin)</h2>
+
+<form action="/entry" method="post">
+  <label>Почта: </label>
+  <input type="text" name="mail"/>
+  <br><br>
+  <label>Пароль: </label>
+  <input type="password" name="password"/>
+  <br><br>
+  <input type="submit" value="Вход">
+</form>
+
+<br>
+<%= link_to 'Создать новый аккаунт', "/users/new" %>
+<br><br>
+<%= link_to 'К списку пользователей', "/users" %>

@@ -1,0 +1,21 @@
+<h2> Редактирование профиля пользователя <%= @user.name.capitalize %> </h2>
+
+<form action="/users/<%= @user.id.to_s %>/save" method="post">
+  <label>Почта: </label>
+  <label name="mail"><%= @user.mail %></label>
+  <br>
+  <label>Имя: </label>
+  <input type="text" name="name" value="<%= @user.name %>"/>
+  <br><br>
+  <label>Новый пароль: </label>
+  <input type="password" name="password"/>
+  <br><br>
+  <input type="submit" value="Сохранить">
+</form>
+
+<% if session[:current_user_id] == @user.id then %>
+  <br><br><br>
+  <%= link_to 'Обратно к страничке пользователя', "/users/#{@user[:id]}" %>
+  <br><br>
+  <%= link_to 'Удалить пользователя', "/users/#{@user[:id]}/remove", method: :delete, data: { confirm: 'Are you sure?' } %>
+<% end %>

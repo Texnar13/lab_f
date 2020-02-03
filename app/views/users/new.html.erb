@@ -1,0 +1,17 @@
+<h2>Регистрация пользователя:</h2>
+
+<form action="/users/new" method="post">
+  <label>Ваша почта: </label>
+  <input type="text" name="mail"/>
+  <br><br>
+  <label>Ваше имя: </label>
+  <input type="text" name="name"/>
+  <br><br>
+  <label>Пароль(не ваш, чтобы всех запутать): </label>
+  <input type="password" name="password"/>
+  <br><br>
+  <input type="submit" value="Создать учетную запись">
+</form>
+
+<br><br><br>
+<%= link_to 'К списку пользователей', "/users" %>
