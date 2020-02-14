@@ -193,6 +193,7 @@ GEM
     zeitwerk (2.2.2)
 
 PLATFORMS
+  x64-mingw32
 
 DEPENDENCIES
   bcrypt
