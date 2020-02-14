@@ -10,20 +10,21 @@ Rails.application.routes.draw do
   # поользователь
   get '/users' => 'users#index'
   get '/users/new' => 'users#new'
-  get '/users/:id' => 'users#show'
-  get '/users/:id/edit' => 'users#edit'
-  delete '/users/:id/remove' => 'users#destroy'
+  get '/users/:id' => 'users#show', constraints: { id: /\d{1,}/ }
+  get '/users/:id/edit' => 'users#edit', constraints: { id: /\d{1,}/ }
 
   post '/users/new' => 'users#create'
-  post '/users/:id/save' => 'users#update'
+  post '/users/:id/save' => 'users#update', constraints: { id: /\d{1,}/ }
+  delete '/users/:id/remove' => 'users#destroy', constraints: { id: /\d{1,}/ }#, defaults: { format: 'jpg' }
 
   # заметки
-  get '/users/:id/notes/new' => 'notes#new'
-  get  '/users/:id/notes/:note_id/change' => 'notes#change'
+  post  '/users/:id/notes/new' => 'notes#create', constraints: { id: /\d{1,}/ }
+  post  '/users/:id/notes/:note_id/change' => 'notes#update', constraints: { id: /\d{1,}/, note_id: /\d{1,}/ }
+  delete  '/users/:id/notes/:note_id/delete' => 'notes#delete', constraints: { id: /\d{1,}/, note_id: /\d{1,}/ }
 
-  post  '/users/:id/notes/new' => 'notes#create'
-  post  '/users/:id/notes/:note_id/change' => 'notes#update'
 
-  delete  '/users/:id/notes/:note_id/delete' => 'notes#delete'
+  # запросы "нетуда"
+  get '/err404' => 'sessions#not_found'
+  get '/*other', to: redirect('/err404')
 
 end

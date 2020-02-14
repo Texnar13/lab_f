@@ -12,7 +12,7 @@
   </thead>
 
   <tbody>
-    <% @users.each do |user| %>
+    <% @viewAllUsers.each do |user| %>
       <tr>
         <td><%= user.mail %></td>
         <td><%= user.name %></td>
@@ -24,8 +24,8 @@
 
 <br>
 
-<% if @current_user then %>
-  <%= link_to 'Моя страница', "/users/#{@current_user.id}" %>
+<% if @currentUser then %>
+  <%= link_to 'Моя страница', "/users/#{@currentUser.id}" %>
 <% else %>
   <%= link_to 'Регистрация', "/entry" %>
 <% end %>

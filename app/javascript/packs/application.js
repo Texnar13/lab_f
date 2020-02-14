@@ -8,7 +8,12 @@ require("turbolinks").start()
 require("@rails/activestorage").start()
 require("channels")
 
-import "../src/my_code.js"
+//= require jquery
+//= require jquery_ujs
+//= require turbolinks
+//= require_tree .
+
+require("packs/my_code.js")
 
 
 // Uncomment to copy all static images under ../images to the output folder and reference

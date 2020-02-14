@@ -1,4 +1,7 @@
-<h2>Вход на сайт (admin@yandex.ru - admin)</h2>
+<h2>Вход на сайт</h2>
+<% if notice %>
+  <h4 id="notice"><%= notice %></h4>
+<% end %>
 
 <form action="/entry" method="post">
   <label>Почта: </label>

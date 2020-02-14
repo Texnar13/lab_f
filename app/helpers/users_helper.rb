@@ -2,17 +2,30 @@ module UsersHelper
   require "erb"
   include ERB::Util
 
-  def myEscapeHTML(s)
-   s.gsub(/&/, '*')
-     .gsub(/\n/, '\\n')
-     .gsub(/"/, '\"')
-     .gsub(/'/, "\\'")
+
+
+  def formatStringDateToText(sDate)
+    date = DateTime.parse(sDate);
+    return date.strftime("%F %H:%M");
   end
-    #.gsub(/</, '*')
-    #.gsub(/>/, '*')
+
+
+  def myEscapeHTML(s)
+    if(s == nil)then
+      s = ""
+    end
+    return s.gsub(/&/, '*')
+      .gsub(/\n/, '\\n')
+      .gsub(/"/, '\"')
+      .gsub("'", "\\\\\'")#\\'
+  end
+
 
   def myTextToHTMLText(s)
-   ("<p>" + s.gsub(/&/, '*')
+    if(s == nil)then
+      s = ""
+    end
+    return ("<p>" + s.gsub(/&/, '*')
      .gsub(/</, '&lt;')
      .gsub(/>/, '&gt;')
      .gsub(/\n/, '</p><p>')
@@ -20,5 +33,4 @@ module UsersHelper
      .gsub(/'/, "\'") + "</p>").html_safe
   end
 
-   #html_escape(s)
 end

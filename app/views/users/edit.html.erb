@@ -1,21 +1,30 @@
-<h2> Редактирование профиля пользователя <%= @user.name.capitalize %> </h2>
+<%= javascript_pack_tag 'application' %>
+<script language="javascript" type="text/javascript">
 
-<form action="/users/<%= @user.id.to_s %>/save" method="post">
-  <label>Почта: </label>
-  <label name="mail"><%= @user.mail %></label>
-  <br>
+</script>
+
+<h2> Редактирование профиля пользователя <%= @viewUser.name.capitalize %> </h2>
+
+<label>Почта: </label>
+<label name="mail"><%= @viewUser.mail %></label>
+<br>
+
+<form action="/users/<%= @viewUser.id.to_s %>/save" method="post">
   <label>Имя: </label>
-  <input type="text" name="name" value="<%= @user.name %>"/>
+  <input type="text" name="name" value="<%= @viewUser.name %>"/>
+  <br><br>
+  <input type="submit" value="Изменить имя">
+</form>
+
+<form action="/users/<%= @viewUser.id.to_s %>/save" method="post">
   <br><br>
   <label>Новый пароль: </label>
   <input type="password" name="password"/>
   <br><br>
-  <input type="submit" value="Сохранить">
+  <input type="submit" value="Изменить пароль">
 </form>
 
-<% if session[:current_user_id] == @user.id then %>
-  <br><br><br>
-  <%= link_to 'Обратно к страничке пользователя', "/users/#{@user[:id]}" %>
-  <br><br>
-  <%= link_to 'Удалить пользователя', "/users/#{@user[:id]}/remove", method: :delete, data: { confirm: 'Are you sure?' } %>
-<% end %>
+<br><br><br>
+<%= link_to 'Обратно к моей страничке', "/users/#{@viewUser[:id]}" %>
+<br><br>
+<%= link_to 'Удалить учетную запись', "/users/#{@viewUser[:id]}/remove", method: :delete, data: { confirm: 'Are you sure?' } %>

@@ -1,15 +1,5 @@
 class NotesController < ApplicationController
-
-  #GET страница создания заметки
-  def new
-
-  end
-
-
-  #GET страница изменения заметки
-  def change
-
-  end
+  before_action :getShowUserByParamsIdAndGetCurrentUserFromSession
 
 
   #POST создание заметки
@@ -40,6 +30,7 @@ class NotesController < ApplicationController
 
       end
     end
+
   end
 
 
@@ -67,7 +58,7 @@ class NotesController < ApplicationController
             }
           end
         end
-        
+
       end
     end
 
@@ -77,12 +68,49 @@ class NotesController < ApplicationController
 
   #DELETE удаление заметки
   def delete
+
+    isDestroyed = false
+    answerStatus = 403
+    # удаляем заметку
     note = Note.find(params[:note_id])
-    note.destroy
+    if(note)then
+      isDestroyed = note.destroy
+      answerStatus = 200
+    end
+
     respond_to do |format|
       format.html
-      format.json { head :no_content }
+      format.json { render json: { isDestroyed: isDestroyed }, status: answerStatus }
     end
   end
 
+
+  private
+    def getShowUserByParamsIdAndGetCurrentUserFromSession
+      # отображаемый пользователь (возвращает nil если пользователь не найден)
+      @viewUser = User.find_by(id: params[:id])
+      # если отображаемый переданный пользователь не существует
+      if(!@viewUser)then
+        redirect_to "/err404", notice: 'Пользователь с таким адресом не найден!'
+        return
+      end
+
+      # ищем аутентифицированного в сессии пользователя
+      if(session[:current_user_id])then
+        @currentUser = User.find_by(id: session[:current_user_id])
+      else
+        @currentUser = nil
+      end
+      # в случаен если пользователя нет в сесии или в сессии некорректный идентификатор
+      if(@currentUser == nil)then
+        # на всякий случай чистим сессию
+        redirect_to '/logout'
+      end
+      # пользователь может менять только свою страницу
+      if(!@currentUser || @viewUser.id != @currentUser.id)then
+        redirect_to "/users/#{@viewUser.id}", notice: 'У вас нет прав на изменение этого пользователя!'
+        return
+      end
+
+    end
 end

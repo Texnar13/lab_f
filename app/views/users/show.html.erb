@@ -1,331 +1,10 @@
-
-<%= javascript_pack_tag 'application' %>
-<script language="javascript" type="text/javascript" >
-
-  function render_create_form(current_user_id, show_user_id){
-
-    // получение формы контейнера
-    var area = document.getElementById("new_note_area");
-
-    // затираем то что было до этого
-    area.innerHTML = "";
-
-    // ==== создание разметки создания заметки ====
-    // фома создания
-    var x = document.createElement("FORM");
-    x.setAttribute("name", "create_note_form");
-    x.setAttribute("style", "padding-left: 10px");
-    x.setAttribute("onsubmit", "return createAsk("+current_user_id+", "+show_user_id+")");
-
-    //x.addEventListener("submit", e => { createAsk(current_user_id, show_user_id)} , false);
-    area.appendChild(x);
-
-
-    // метка заголовка
-    var titleLable = document.createElement("LABEL");
-    titleLable.setAttribute("for", "title");
-    titleLable.innerHTML = "Заголовок: ";
-    x.appendChild(titleLable);
-
-    // поле заголовка
-    var titleInput = document.createElement("INPUT");
-    titleInput.setAttribute("type", "text");
-    titleInput.setAttribute("name", "title");
-    x.appendChild(titleInput);
-
-    // перенос строки
-    x.innerHTML = x.innerHTML + "<br>";
-
-    // метка тела заметки
-    var areaLable = document.createElement("LABEL");
-    areaLable.setAttribute("for", "body_text");
-    areaLable.innerHTML = "Текст: ";
-    x.appendChild(areaLable);
-
-    // тело заметки
-    var textArea = document.createElement("TEXTAREA");
-    textArea.setAttribute("style", "margin: 0px; width: 295px; height: 165px");
-    textArea.setAttribute("name", "body_text");
-    x.appendChild(textArea);
-
-    // перенос строки
-    x.innerHTML = x.innerHTML + "<br>";
-
-    // метка чекбокса
-    var checkboxLable = document.createElement("LABEL");
-    checkboxLable.setAttribute("for", "is_public");
-    checkboxLable.innerHTML = "Публичная заметка:";
-    x.appendChild(checkboxLable);
-
-    // чекбокс
-    var checkbox = document.createElement("INPUT");
-    checkbox.setAttribute("type", "checkbox");
-    checkbox.setAttribute("name", "is_public");
-    checkbox.setAttribute("checked","checked");
-    x.appendChild(checkbox);
-
-    // перенос строки
-    x.innerHTML = x.innerHTML + "<br><br>";
-
-    // кнопка ввода
-    var button = document.createElement("INPUT");
-    button.setAttribute("type", "SUBMIT");
-    button.setAttribute("value", "Добавить заметку");
-    //button.onclick = function(){ createAsk(current_user_id, show_user_id); };
-    button.addEventListener('click', function(){alert('yay'); createAsk(current_user_id, show_user_id); }, false);
-    x.appendChild(button);
-
-    // перенос строки
-    area.innerHTML = area.innerHTML + "<br>";
-
-    return false;
-  }
-
-  function createAsk(current_user_id, show_user_id){
-    // POST запрос на создание заметки
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/users/" + show_user_id + "/notes/new.json", true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = function () {
-      var done = 4, ok = 200;
-      if (xhr.readyState == done && xhr.status == ok) {
-        // после успешного создания заметки
-        my_JSON_object = JSON.parse(xhr.responseText);
-        createAnswer(my_JSON_object, current_user_id, show_user_id);
-      }
-    };
-    xhr.send(
-     'title=' + document.forms.create_note_form.title.value +
-     '&body_text=' + document.forms.create_note_form.body_text.value +
-     '&is_public=' + document.forms.create_note_form.is_public.value
-    );
-    return false;
-  }
-
-  function createAnswer(data, current_user_id, show_user_id){
-
-          // формируем html
-          var html_answer = "<h3>Заметка "
-          if(!data.is_public){
-            html_answer = html_answer + "приватная"
-          }
-          html_answer = html_answer + " от " + data.when_created + "</h3>"+
-            "<h3>"+ escapeHTML(data.title) + "</h3>"+
-            escapeHTML(data.body_text)+"<br><br>";
-          if(show_user_id == current_user_id){
-            html_answer = html_answer +
-            "<a data-confirm=\"Удалить заметку?\" rel=\"nofollow\" data-method=\"delete\" href=\"/users/"+show_user_id+"/notes/"+data.note_id+"/delete\">Удалить</a> "+
-            "<button onclick=\"location.href = '/users/"+show_user_id+"/notes/"+data.note_id+"/change'\">Редактировать</button>"
-          }
-
-          // главный контейнер html
-          var result = document.createElement("div")
-          result.innerHTML = html_answer;
-          result.setAttribute("id", "note_area_" + data.note_id);
-          result.setAttribute("style","margin: 5px");
-          result.setAttribute("class", (data.is_public ? "note" : "private_note"));
-          // выводим html ответа над зоной новых заметок
-          document.getElementById("note_area").insertBefore(
-            result,
-            document.getElementById("new_note_area")
-          );
-
-          // обнуляем зону создания
-          document.getElementById("new_note_area").innerHTML =
-            "<button style=\"margin: 5px\" id=\"new_note_button\" onclick=\"return render_create_form(" + current_user_id + ", " + show_user_id + ");\">Новая заметка</button>";
-
-  }
-
-
-
-
-
-
-
-  function render_edit_form(note_id, title, body_text, is_public, current_user_id, show_user_id){
-
-    // получение формы контейнера
-    var area = document.getElementById("note_area_" + note_id);
-
-    // ==== создание разметки редактора заметки ====
-    // фома редактирования
-    var x = document.createElement("FORM");
-    x.setAttribute("id", "edit_note_form_" + note_id);
-    x.setAttribute("name", "edit_note_form_" + note_id);
-    x.setAttribute("onsubmit", "return updateAsk("+note_id+", "+current_user_id+", "+show_user_id+")");
-    //x.onsubmit = function(){return updateAsk(note_id, title, body_text, is_public, current_user_id, show_user_id);}
-    x.setAttribute("style", "padding-left: 10px");
-
-    // метка заголовка
-    var titleLable = document.createElement("LABEL");
-    titleLable.setAttribute("for", "title");
-    titleLable.innerHTML = "Заголовок: ";
-    x.appendChild(titleLable);
-
-    // поле заголовка
-    var titleInput = document.createElement("INPUT");
-    titleInput.setAttribute("type", "text");
-    titleInput.setAttribute("name", "title");
-    titleInput.setAttribute("value", myTextToSimpleText(title));
-    x.appendChild(titleInput);
-
-    // перенос строки
-    x.innerHTML = x.innerHTML + "<br>";
-
-    // метка тела заметки
-    var areaLable = document.createElement("LABEL");
-    areaLable.setAttribute("for", "body_text");
-    areaLable.innerHTML = "Текст: ";
-    x.appendChild(areaLable);
-
-    // тело заметки
-    var textArea = document.createElement("TEXTAREA");
-    textArea.setAttribute("style", "margin: 0px; width: 295px; height: 165px");
-    textArea.setAttribute("name", "body_text");
-    textArea.innerHTML = myTextToSimpleText(body_text);
-    x.appendChild(textArea);
-
-    // перенос строки
-    x.innerHTML = x.innerHTML + "<br>";
-
-    // метка чекбокса
-    var checkboxLable = document.createElement("LABEL");
-    checkboxLable.setAttribute("for", "is_public");
-    checkboxLable.innerHTML = "Публичная заметка:";
-    x.appendChild(checkboxLable);
-
-    // чекбокс
-    var checkbox = document.createElement("INPUT");
-    checkbox.setAttribute("type", "checkbox");
-    checkbox.setAttribute("name", "is_public");
-    if(is_public){checkbox.setAttribute("checked","checked");}
-    x.appendChild(checkbox);
-
-    // перенос строки
-    x.innerHTML = x.innerHTML + "<br><br>";
-
-    // кнопка ввода
-    var button = document.createElement("INPUT");
-    button.setAttribute("type", "submit");
-    button.setAttribute("value", "Сохранить заметку");
-    x.appendChild(button);
-
-
-    // затираем то что было до этого
-    area.innerHTML = "";
-
-    area.appendChild(x);
-    area.innerHTML = area.innerHTML + "<br>";
-
-    return false;
-  }
-
-  function updateAsk(note_id, current_user_id, show_user_id){
-
-    // POST запрос на редактирование заметки
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/users/" + show_user_id + "/notes/" + note_id + "/change.json", true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = function () {
-      var done = 4, ok = 200;
-      if (xhr.readyState == done && xhr.status == ok) {
-        // после успешного создания заметки
-        my_JSON_object = JSON.parse(xhr.responseText);
-        updateMake(my_JSON_object, current_user_id, show_user_id);
-      }
-    };
-
-    xhr.send(
-     'title=' + document.forms['edit_note_form_' + note_id].elements['title'].value +
-     '&body_text=' + document.forms['edit_note_form_' + note_id].elements['body_text'].value +
-     '&is_public=' + document.forms['edit_note_form_' + note_id].elements['is_public'].checked
-    );
-    return false;
-
-  }
-
-
-  function updateMake(data, current_user_id, show_user_id){
-
-    var area_update = document.getElementById("note_area_" + data.note_id);
-    area_update.innerHTML = "";
-    area_update.setAttribute("class", (data.is_public ? "note" : "private_note"));
-    var html_answer = "<h3>Заметка "
-    if(!data.is_public){
-      html_answer = html_answer + "приватная"
-    }
-
-    html_answer = html_answer + " от " + data.when_created + "</h3>"+
-      "<h3>" + myTextToHTMLText(data.title) + "</h3>" + myTextToHTMLText(data.body_text) +"<br><br>";
-
-    area_update.innerHTML = html_answer;
-
-
-
-    // если это аккаунт этого пользователя
-    if(show_user_id == current_user_id){
-
-      area_update.innerHTML = area_update.innerHTML +
-      "<a data-confirm=\"Удалить заметку?\" rel=\"nofollow\" data-method=\"delete\" href=\"/users/"+show_user_id+"/notes/"+data.note_id+"/delete\">Удалить</a> ";
-
-      // кнопка удаления записи
-      var button = document.createElement("BUTTON");
-      button.setAttribute("type", "submit");
-      button.setAttribute("value", "Сохранить заметку");
-      button.innerHTML = 'Редактировать';
-      button.addEventListener('click', function(){ render_edit_form(data.note_id, data.title, data.body_text, data.is_public, current_user_id, show_user_id) }, false);
-      area_update.appendChild(button);
-
-    }
-
-
-
-
-
-
-    return false;
-
-  }
-
-  function myEscapeHTML(text) {
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/(\r\n|\n|\r)/gm, "\\n")
-        .replace(/"/g, "\\\"")
-        .replace(/'/g, "\'");
-  }
-
-  function myTextToSimpleText(text) {
-    return text
-        //.replace(/&/g, "&amp;")
-        //.replace(/"/g, "&quot;")
-        //.replace(/'/g, "&#039;");
-  }
-
-  function myTextToHTMLText(text) {
-    return "<p>" + text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/(\r\n|\n|\r)/gm, "</p><p>")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;") + "</p>";
-  }
-
-
-
-
-</script>
-
-<h2> Страничка пользователя <%= @view_user.name.capitalize %> </h2>
+<h2> Страничка пользователя <%= @viewUser.name.capitalize %> </h2>
 
 <p id="notice"><%= notice %></p>
 
 <p>
-  <strong>Почта:</strong>
-  <%= @view_user.mail %>
+  <strong>Почта:<%= @testMy %></strong>
+  <%= @viewUser.mail %>
 </p>
 
 
@@ -333,28 +12,27 @@
   <div style="margin-left: 10px; margin-top: 10px"><strong> Заметки: </strong></div>
   <!-- вывод заметок пользователя -->
   <% @notes.each do |note| %>
+
     <div id="note_area_<%= note.id %>" style="margin: 5px" <%= "class=note" if note.is_public %><%= "class=private_note" if !note.is_public %>>
-      <h3><%= 'приватная' if !note.is_public %> заметка от <%= note.when_created.to_s %></h3>
+      <h3><%= 'приватная' if !note.is_public %> заметка от <%= formatStringDateToText(note.when_created.to_s) %></h3>
       <h3><%= myTextToHTMLText(note.title) %></h3>
       <%= myTextToHTMLText(note.body) %><br><br>
 
-
-      <% if @current_user != nil %>
-        <% if(@current_user[:id] == @view_user[:id]) then %>
-          <%= link_to 'Удалить', "/users/#{note[:user_id]}/notes/#{note[:id]}/delete", method: :delete, data: { confirm: '-Удалить заметку?' } %>
-          <button onclick="return render_edit_form(<%= note.id %>, '<%= myEscapeHTML(note.title) %>', '<%= myEscapeHTML(note.body) %>', <%= "true" if note.is_public %><%= "false" if !note.is_public %>, <%= @current_user.id.to_s %>, <%= @view_user.id.to_s %>);">Редактировать</button>
+      <% if @currentUser != nil %>
+        <% if(@currentUser[:id] == @viewUser[:id]) then %>
+          <button onclick="return MyLib.deleteAsk(<%= note[:id] %>, <%= @viewUser.id.to_s %>);">Удалить</button>
+          <button onclick="return MyLib.render_edit_form(<%= note.id %>, '<%= myEscapeHTML(note.title) %>', '<%= myEscapeHTML(note.body) %>', <%= "true" if note.is_public %><%= "false" if !note.is_public %>, <%= @currentUser.id.to_s %>, <%= @viewUser.id.to_s %>);">Редактировать</button>
         <% end %>
       <% end %>
-
-
     </div>
+
   <% end %>
 
 
     <!-- создание новой -->
     <div class="note" id="new_note_area">
-      <% if(@current_user && @current_user[:id] == @view_user[:id]) then %>
-        <button style="margin: 5px" id="new_note_button" onclick="return render_create_form(<%= @current_user.id.to_s %>, <%= @view_user.id.to_s %>);">Новая заметка</button>
+      <% if(@currentUser && @currentUser[:id] == @viewUser[:id]) then %>
+        <button style="margin: 5px" id="new_note_button" onclick="return MyLib.render_create_form(<%= @currentUser.id.to_s %>, <%= @viewUser.id.to_s %>);">Новая заметка</button>
       <% end %>
     </div>
 </div>
@@ -362,8 +40,8 @@
 
 <br>
 <p>
-  <% if(@current_user && @current_user[:id] == @user[:id]) then %>
-    <%= link_to 'Редактировать', "/users/#{@current_user[:id]}/edit" %> |
+  <% if(@currentUser && @currentUser[:id] == @viewUser[:id]) then %>
+    <%= link_to 'Редактировать', "/users/#{@currentUser[:id]}/edit" %> |
     <%= link_to 'Выйти из учетной записи', '/logout' %>|
   <% end %>
   <%= link_to 'К списку всех пользователей', '/users' %>
