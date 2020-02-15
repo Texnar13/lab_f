@@ -152,13 +152,14 @@ class UsersController < ApplicationController
     def getCurrentUserFromSession
       if(session[:current_user_id])then
         @currentUser = User.find_by(id: session[:current_user_id]);
+        # на всякий случай чистим сессию
+        if(@currentUser == nil)then
+          redirect_to '/logout'
+        end
       else
         @currentUser = nil;
       end
-      # на всякий случай чистим сессию
-      if(@currentUser == nil)then
-        redirect_to '/logout'
-      end
+
     end
 
 end
